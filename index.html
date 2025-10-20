@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chúc mừng 20/10 🎆</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       height: 100%;
-      background: url('https://raw.githubusercontent.com/lamltf/fireworks-demo/main/IMG_3414.jpeg') center/cover no-repeat;
+      overflow: hidden;
+      background: url('https://raw.githubusercontent.com/lamltf/fireworks-demo/main/IMG_3414.jpeg')
+        center/cover no-repeat fixed;
     }
     canvas {
       position: fixed;
@@ -25,10 +27,11 @@
       width: 100%;
       text-align: center;
       color: white;
-      font-size: 3rem;
+      font-size: clamp(1.8rem, 4vw, 3rem);
       font-family: 'Segoe UI', sans-serif;
       text-shadow: 0 0 20px #ff77ff;
       animation: glow 2s ease-in-out infinite alternate;
+      z-index: 2;
     }
     @keyframes glow {
       from { text-shadow: 0 0 10px #ff66cc; }
@@ -38,32 +41,107 @@
 </head>
 <body>
   <h1>💐 Chúc mừng ngày Phụ Nữ Việt Nam 20/10 💖</h1>
-  <canvas id="fireworks"></canvas>
+  <canvas id="canvas"></canvas>
 
-  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2/dist/fireworks.js"></script>
   <script>
-    const container = document.getElementById('fireworks');
-    const fireworks = new Fireworks.default(container, {
-      autoresize: true,
-      opacity: 0.3,
-      acceleration: 1.05,
-      friction: 0.97,
-      gravity: 1.5,
-      particles: 120,
-      traceLength: 3,
-      traceSpeed: 10,
-      explosion: 8,
-      intensity: 20,
-      flickering: 50,
-      lineStyle: 'round',
-      hue: { min: 0, max: 360 },
-      delay: { min: 30, max: 60 },
-      rocketsPoint: 50,
-      brightness: { min: 50, max: 80 },
-      decay: { min: 0.015, max: 0.03 },
-      mouse: { click: false, move: false, max: 1 }
-    });
-    fireworks.start();
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let cw, ch;
+    function resizeCanvas() {
+      cw = canvas.width = window.innerWidth;
+      ch = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // 🎇 Mô phỏng pháo hoa
+    const fireworks = [];
+    const particles = [];
+
+    class Firework {
+      constructor(x, y, targetY) {
+        this.x = x;
+        this.y = y;
+        this.targetY = targetY;
+        this.speed = 4 + Math.random() * 3;
+        this.angle = Math.PI / 2;
+        this.brightness = Math.random() * 50 + 50;
+        this.exploded = false;
+      }
+      update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+          this.explode();
+          this.exploded = true;
+        }
+      }
+      explode() {
+        const count = 40 + Math.random() * 40;
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(this.x, this.y));
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsl(${this.brightness},100%,50%)`;
+        ctx.fill();
+      }
+    }
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.speed = Math.random() * 5 + 1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.02 + 0.01;
+        this.color = Math.floor(Math.random() * 360);
+      }
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed + 0.2; // gravity
+        this.alpha -= this.decay;
+      }
+      draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsl(${this.color}, 100%, 60%)`;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function loop() {
+      requestAnimationFrame(loop);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.fillRect(0, 0, cw, ch);
+
+      if (Math.random() < 0.05) {
+        fireworks.push(
+          new Firework(
+            Math.random() * cw,
+            ch,
+            Math.random() * (ch / 2)
+          )
+        );
+      }
+
+      fireworks.forEach((f, i) => {
+        f.update();
+        f.draw();
+        if (f.exploded) fireworks.splice(i, 1);
+      });
+
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) particles.splice(i, 1);
+      });
+    }
+    loop();
   </script>
 </body>
 </html>
