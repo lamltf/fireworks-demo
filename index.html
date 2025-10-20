@@ -37,7 +37,7 @@
 </head>
 <body>
   <canvas id="fireworks"></canvas>
-  <h1>💖💖💖</h1>
+  <h1>💖💖💖💖💖</h1>
 
   <script>
     const canvas = document.getElementById("fireworks");
@@ -54,33 +54,29 @@
       return Math.random() * (max - min) + min;
     }
 
-    // 🎇 Tạo pháo hoa loại bay lên rồi nổ
+    // 🎇 Pháo hoa bay lên
     function createFireworkUp() {
       const x = random(w * 0.2, w * 0.8);
       const y = h;
       const targetY = random(h * 0.2, h * 0.5);
       const color = `hsl(${random(0, 360)}, 100%, 60%)`;
-      fireworks.push({ x, y, targetY, color, vy: random(-10, -14), exploded: false });
+      fireworks.push({ x, y, targetY, color, vy: random(-8, -11), exploded: false });
     }
 
-    // 💥 Khi pháo hoa nổ
+    // 💥 Nổ ra hạt
     function explode(x, y, color, type = "circle") {
-      const count = random(60, 120);
+      const count = 40; // giảm bớt để nhẹ hơn
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count;
-        const speed = random(2, 6);
+        const speed = random(2, 5);
         let vx = Math.cos(angle) * speed;
         let vy = Math.sin(angle) * speed;
 
-        // Tùy loại pháo hoa
         if (type === "spiral") {
-          vx += Math.sin(angle * 10) * 0.5;
-          vy += Math.cos(angle * 10) * 0.5;
+          vx += Math.sin(angle * 5) * 0.3;
+          vy += Math.cos(angle * 5) * 0.3;
         } else if (type === "star") {
-          if (i % 10 === 0) speed *= 3;
-        } else if (type === "sparkle") {
-          vx *= random(0.5, 1.5);
-          vy *= random(0.5, 1.5);
+          if (i % 8 === 0) vy *= 2.5;
         }
 
         particles.push({
@@ -90,8 +86,7 @@
           vy,
           alpha: 1,
           color,
-          type,
-          size: random(1, 3),
+          size: random(1, 2.5),
         });
       }
     }
@@ -99,31 +94,33 @@
     function draw() {
       ctx.clearRect(0, 0, w, h);
 
-      // 🎆 Vẽ các pháo hoa đang bay lên
+      // 🎆 Bay lên
       for (let i = fireworks.length - 1; i >= 0; i--) {
         const f = fireworks[i];
         f.y += f.vy;
+        f.vy += 0.05;
+
         ctx.fillStyle = f.color;
         ctx.beginPath();
-        ctx.arc(f.x, f.y, 3, 0, Math.PI * 2);
+        ctx.arc(f.x, f.y, 2.5, 0, Math.PI * 2);
         ctx.fill();
 
         if (f.y <= f.targetY && !f.exploded) {
           f.exploded = true;
-          const types = ["circle", "spiral", "star", "sparkle"];
+          const types = ["circle", "spiral", "star"];
           const type = types[Math.floor(Math.random() * types.length)];
           explode(f.x, f.y, f.color, type);
           fireworks.splice(i, 1);
         }
       }
 
-      // 🌈 Vẽ các hạt nổ
+      // ✨ Hạt pháo
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.05;
-        p.alpha -= 0.01;
+        p.vy += 0.04;
+        p.alpha -= 0.015;
 
         if (p.alpha <= 0) particles.splice(i, 1);
         else {
@@ -139,17 +136,14 @@
       requestAnimationFrame(draw);
     }
 
-    // 🔥 Tự động tạo pháo bay
+    // 🔥 Bắn tự động, nhưng nhẹ hơn
     setInterval(() => {
-      for (let i = 0; i < 3; i++) createFireworkUp();
-    }, 700);
+      for (let i = 0; i < 2; i++) createFireworkUp();
+    }, 900);
 
-    // 👆 Khi click thì tạo thêm 3 pháo ngay chỗ bấm
+    // 👆 Bắn thêm khi chạm
     canvas.addEventListener("click", (e) => {
-      const types = ["circle", "spiral", "star", "sparkle"];
-      for (let i = 0; i < 3; i++) {
-        explode(e.clientX, e.clientY, `hsl(${random(0, 360)}, 100%, 60%)`, types[i]);
-      }
+      explode(e.clientX, e.clientY, `hsl(${random(0, 360)}, 100%, 60%)`, "circle");
     });
 
     window.addEventListener("resize", () => {
