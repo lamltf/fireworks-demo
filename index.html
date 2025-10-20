@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chúc mừng 20/10 🎆</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: url('https://raw.githubusercontent.com/lamltf/fireworks-demo/main/IMG_3414.jpeg') center/cover no-repeat;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    h1 {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-size: 3rem;
+      font-family: 'Segoe UI', sans-serif;
+      text-shadow: 0 0 20px #ff77ff;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #ff66cc; }
+      to { text-shadow: 0 0 25px #fff, 0 0 50px #ff33cc; }
+    }
+  </style>
+</head>
+<body>
+  <h1>💐 Chúc mừng ngày Phụ Nữ Việt Nam 20/10 💖</h1>
+  <canvas id="fireworks"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2/dist/fireworks.js"></script>
+  <script>
+    const container = document.getElementById('fireworks');
+    const fireworks = new Fireworks.default(container, {
+      autoresize: true,
+      opacity: 0.3,
+      acceleration: 1.05,
+      friction: 0.97,
+      gravity: 1.5,
+      particles: 120,
+      traceLength: 3,
+      traceSpeed: 10,
+      explosion: 8,
+      intensity: 20,
+      flickering: 50,
+      lineStyle: 'round',
+      hue: { min: 0, max: 360 },
+      delay: { min: 30, max: 60 },
+      rocketsPoint: 50,
+      brightness: { min: 50, max: 80 },
+      decay: { min: 0.015, max: 0.03 },
+      mouse: { click: false, move: false, max: 1 }
+    });
+    fireworks.start();
+  </script>
+</body>
+</html>
