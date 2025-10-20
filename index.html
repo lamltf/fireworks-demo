@@ -54,10 +54,10 @@
     }
 
     function createFirework(x, y) {
-      const count = 50;
+      const count = 100; // tăng từ 50 → 100 hạt mỗi pháo hoa
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count;
-        const speed = random(2, 5);
+        const speed = random(2, 6);
         particles.push({
           x,
           y,
@@ -70,14 +70,14 @@
     }
 
     function draw() {
-      // xoá dần nhưng không tô nền đen => giữ trong suốt để thấy background
+      // Xoá dần, nhưng giữ nền trong suốt để ảnh background còn
       ctx.clearRect(0, 0, w, h);
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.05; // trọng lực
+        p.vy += 0.04; // trọng lực nhẹ hơn chút
         p.alpha -= 0.01;
         if (p.alpha <= 0) particles.splice(i, 1);
         else {
@@ -93,13 +93,18 @@
     }
 
     canvas.addEventListener("click", (e) => {
-      createFirework(e.clientX, e.clientY);
+      for (let i = 0; i < 3; i++) { // bắn 3 lần khi chạm
+        setTimeout(() => createFirework(e.clientX, e.clientY), i * 100);
+      }
     });
 
-    // Tự động bắn ngẫu nhiên
+    // Bắn tự động nhiều hơn, ngẫu nhiên khắp màn
     setInterval(() => {
-      createFirework(random(0, w), random(0, h / 2));
-    }, 800);
+      const burstCount = 3; // 3 pháo hoa/lần
+      for (let i = 0; i < burstCount; i++) {
+        createFirework(random(0, w), random(0, h / 1.5));
+      }
+    }, 600); // giảm thời gian giữa các lần bắn từ 800 → 600ms
 
     window.addEventListener("resize", () => {
       w = window.innerWidth;
