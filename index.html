@@ -1,174 +1,165 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pháo hoa chúc mừng 20/10</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fireworks Demo</title>
   <style>
     html, body {
       margin: 0;
-      height: 100%;
+      padding: 0;
       overflow: hidden;
-      background: url('https://raw.githubusercontent.com/lamltf/fireworks-demo/main/IMG_3414.jpeg') no-repeat center center fixed;
+      height: 100%;
+      background: url("https://raw.githubusercontent.com/lamltf/fireworks-demo/main/IMG_3414.jpeg") no-repeat center center fixed;
       background-size: cover;
     }
     canvas {
-      position: absolute;
-      top: 0; left: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
-<canvas id="fireworks"></canvas>
+  <canvas id="fireworks"></canvas>
+  <script>
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let cw = window.innerWidth;
+    let ch = window.innerHeight;
+    canvas.width = cw;
+    canvas.height = ch;
 
-<script>
-const canvas = document.getElementById('fireworks');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    const fireworks = [];
+    const particles = [];
+    const colors = ['#ff4d4d', '#ffd700', '#00ffff', '#ff66cc', '#ffffff', '#00ff66'];
 
-const colors = ['#ff3b3b', '#ffd93b', '#3bff6c', '#3bbcff', '#ff3be5', '#fff'];
-const shapes = ['circle', 'heart', 'star'];
-const fireworks = [];
-const rockets = [];
+    class Firework {
+      constructor() {
+        this.x = Math.random() * cw;
+        this.y = ch;
+        this.targetY = Math.random() * (ch / 2);
+        this.speed = 6 + Math.random() * 3;
+        this.size = 2;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.exploded = false;
+      }
 
-function random(min, max) {
-  return Math.random() * (max - min) + min;
-}
+      update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY && !this.exploded) {
+          this.explode();
+          this.exploded = true;
+        }
+      }
 
-function drawHeart(x, y, size, color) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(size / 100, size / 100);
-  ctx.beginPath();
-  ctx.moveTo(0, 30);
-  ctx.bezierCurveTo(0, 0, -50, 0, -50, -30);
-  ctx.bezierCurveTo(-50, -60, -10, -80, 0, -50);
-  ctx.bezierCurveTo(10, -80, 50, -60, 50, -30);
-  ctx.bezierCurveTo(50, 0, 0, 0, 0, 30);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
+      explode() {
+        const count = 50 + Math.random() * 50;
+        const type = Math.floor(Math.random() * 3); // 0 = tròn, 1 = tim, 2 = sao
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(this.x, this.y, this.color, type));
+        }
+      }
 
-function drawStar(x, y, radius, color) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.translate(x, y);
-  ctx.moveTo(0, 0 - radius);
-  for (let i = 0; i < 5; i++) {
-    ctx.rotate(Math.PI / 5);
-    ctx.lineTo(0, 0 - (radius * 0.5));
-    ctx.rotate(Math.PI / 5);
-    ctx.lineTo(0, 0 - radius);
-  }
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
-
-class Particle {
-  constructor(x, y, color, shape) {
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.shape = shape;
-    this.size = random(2, 4);
-    this.speedX = random(-4, 4);
-    this.speedY = random(-4, 4);
-    this.alpha = 1;
-  }
-
-  update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-    this.speedY += 0.05; // gravity
-    this.alpha -= 0.015;
-  }
-
-  draw() {
-    ctx.globalAlpha = this.alpha;
-    if (this.shape === 'heart') {
-      drawHeart(this.x, this.y, this.size * 10, this.color);
-    } else if (this.shape === 'star') {
-      drawStar(this.x, this.y, this.size * 2.5, this.color);
-    } else {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
     }
-    ctx.globalAlpha = 1;
-  }
-}
 
-class Rocket {
-  constructor(x, y, targetY, color) {
-    this.x = x;
-    this.y = y;
-    this.targetY = targetY;
-    this.color = color;
-    this.speedY = random(8, 11);
-  }
+    class Particle {
+      constructor(x, y, color, type) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = 2 + Math.random() * 2;
+        this.life = 100 + Math.random() * 50;
+        this.alpha = 1;
+        this.type = type;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * 6 + 2;
+      }
 
-  update() {
-    this.y -= this.speedY;
-    this.speedY *= 0.98;
-    if (this.y <= this.targetY) {
-      explode(this.x, this.y, this.color);
-      return true;
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.alpha -= 0.015;
+        this.life--;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+
+        if (this.type === 0) { // tròn
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        } else if (this.type === 1) { // trái tim
+          ctx.moveTo(this.x, this.y);
+          for (let i = 0; i < Math.PI * 2; i += 0.1) {
+            const x = 16 * Math.pow(Math.sin(i), 3);
+            const y = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
+            ctx.lineTo(this.x + x / 2, this.y - y / 2);
+          }
+        } else { // sao
+          const spikes = 5;
+          const outer = this.size * 2;
+          const inner = this.size;
+          let rot = Math.PI / 2 * 3;
+          let step = Math.PI / spikes;
+          ctx.moveTo(this.x, this.y - outer);
+          for (let i = 0; i < spikes; i++) {
+            ctx.lineTo(this.x + Math.cos(rot) * outer, this.y + Math.sin(rot) * outer);
+            rot += step;
+            ctx.lineTo(this.x + Math.cos(rot) * inner, this.y + Math.sin(rot) * inner);
+            rot += step;
+          }
+          ctx.lineTo(this.x, this.y - outer);
+        }
+
+        ctx.fill();
+        ctx.restore();
+      }
     }
-    return false;
-  }
 
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-  }
-}
+    function animate() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillRect(0, 0, cw, ch);
 
-function explode(x, y, color) {
-  const shape = shapes[Math.floor(Math.random() * shapes.length)];
-  for (let i = 0; i < 60; i++) {
-    fireworks.push(new Particle(x, y, color, shape));
-  }
-}
+      fireworks.forEach((f, i) => {
+        f.update();
+        f.draw();
+        if (f.exploded) fireworks.splice(i, 1);
+      });
 
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // không vẽ nền đen nữa
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.life <= 0 || p.alpha <= 0) particles.splice(i, 1);
+      });
 
-  for (let i = rockets.length - 1; i >= 0; i--) {
-    const rocket = rockets[i];
-    if (rocket.update()) rockets.splice(i, 1);
-    else rocket.draw();
-  }
+      requestAnimationFrame(animate);
+    }
 
-  for (let i = fireworks.length - 1; i >= 0; i--) {
-    const p = fireworks[i];
-    p.update();
-    p.draw();
-    if (p.alpha <= 0) fireworks.splice(i, 1);
-  }
+    setInterval(() => {
+      for (let i = 0; i < 3; i++) fireworks.push(new Firework()); // bắn nhanh hơn
+    }, 400);
 
-  requestAnimationFrame(animate);
-}
+    window.addEventListener('resize', () => {
+      cw = window.innerWidth;
+      ch = window.innerHeight;
+      canvas.width = cw;
+      canvas.height = ch;
+    });
 
-function launchRocket() {
-  const x = random(100, canvas.width - 100);
-  const y = canvas.height;
-  const targetY = random(canvas.height / 3, canvas.height / 2);
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  rockets.push(new Rocket(x, y, targetY, color));
-}
-
-animate();
-setInterval(launchRocket, 1000);
-canvas.addEventListener('click', launchRocket);
-</script>
+    animate();
+  </script>
 </body>
 </html>
