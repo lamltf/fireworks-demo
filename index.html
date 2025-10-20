@@ -29,6 +29,7 @@
   <script>
     const canvas = document.getElementById('fireworks');
     const ctx = canvas.getContext('2d');
+    ctx.globalCompositeOperation = 'lighter'; // giúp hiệu ứng sáng chồng lên nhau
     let cw = window.innerWidth;
     let ch = window.innerHeight;
     canvas.width = cw;
@@ -59,7 +60,7 @@
 
       explode() {
         const count = 50 + Math.random() * 50;
-        const type = Math.floor(Math.random() * 3); // 0 = tròn, 1 = tim, 2 = sao
+        const type = Math.floor(Math.random() * 3); // 0=tròn,1=tim,2=sao
         for (let i = 0; i < count; i++) {
           particles.push(new Particle(this.x, this.y, this.color, type));
         }
@@ -101,7 +102,7 @@
 
         if (this.type === 0) { // tròn
           ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        } else if (this.type === 1) { // trái tim
+        } else if (this.type === 1) { // tim
           ctx.moveTo(this.x, this.y);
           for (let i = 0; i < Math.PI * 2; i += 0.1) {
             const x = 16 * Math.pow(Math.sin(i), 3);
@@ -113,7 +114,7 @@
           const outer = this.size * 2;
           const inner = this.size;
           let rot = Math.PI / 2 * 3;
-          let step = Math.PI / spikes;
+          const step = Math.PI / spikes;
           ctx.moveTo(this.x, this.y - outer);
           for (let i = 0; i < spikes; i++) {
             ctx.lineTo(this.x + Math.cos(rot) * outer, this.y + Math.sin(rot) * outer);
@@ -130,8 +131,8 @@
     }
 
     function animate() {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.fillRect(0, 0, cw, ch);
+      // làm trong suốt để không đè lên background
+      ctx.clearRect(0, 0, cw, ch);
 
       fireworks.forEach((f, i) => {
         f.update();
@@ -149,8 +150,8 @@
     }
 
     setInterval(() => {
-      for (let i = 0; i < 3; i++) fireworks.push(new Firework()); // bắn nhanh hơn
-    }, 400);
+      for (let i = 0; i < 3; i++) fireworks.push(new Firework());
+    }, 600);
 
     window.addEventListener('resize', () => {
       cw = window.innerWidth;
